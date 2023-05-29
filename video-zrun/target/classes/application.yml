@@ -1,8 +1,0 @@
-server:
-  port: 21000 #工程端口
-logging:
-    level:
-      root: info
-    file:
-      path: log
-
