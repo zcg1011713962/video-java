@@ -1,4 +1,0 @@
-2023-05-27 22:37:08.176  INFO 14680 --- [main] org.video.Main                           : Starting Main using Java 1.8.0_131 on LAPTOP-K3EHN9BK with PID 14680 (D:\coding\video-java\video-zrun\target\classes started by AS US in D:\coding\video-java)
-2023-05-27 22:37:08.237  INFO 14680 --- [main] org.video.Main                           : No active profile set, falling back to default profiles: default
-2023-05-27 22:37:20.723  INFO 14680 --- [main] o.s.b.web.embedded.netty.NettyWebServer  : Netty started on port 21000
-2023-05-27 22:37:20.743  INFO 14680 --- [main] org.video.Main                           : Started Main in 14.412 seconds (JVM running for 17.768)
