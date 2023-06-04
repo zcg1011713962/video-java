@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public interface Connection<T> extends Handle<T>{
+    Bootstrap bootstrap = new Bootstrap();
     ConcurrentMap<Protocol, BaseEntity> protocolMap = new ConcurrentHashMap<>();
 
     /**
@@ -19,7 +20,6 @@ public interface Connection<T> extends Handle<T>{
      * @return
      */
     default Bootstrap getBootstrap(Client client){
-        Bootstrap bootstrap= new Bootstrap();
         bootstrap.group(new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() * 4))
                 .channel(NioSocketChannel.class)
                 .handler(protocolMap.get(client.protocol()).getChannelHandler())

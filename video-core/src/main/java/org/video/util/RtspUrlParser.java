@@ -7,6 +7,9 @@ public class RtspUrlParser {
     private String url;
     private String ip;
     private int port;
+    private String username;
+    private String password;
+    private String uri;
 
     public RtspUrlParser(String url) {
         this.url = url;
@@ -14,22 +17,35 @@ public class RtspUrlParser {
 
     public boolean parse() {
         try {
-            URI uri = new URI(url);
-            String scheme = uri.getScheme();
+            URI u = new URI(url);
+            String scheme = u.getScheme();
             if (scheme == null || !scheme.equals("rtsp")) {
                 return false;
             }
-            String host = uri.getHost();
-            int p = uri.getPort();
-            if (p == -1) {
-                p = 554;
+            ip = u.getHost();
+            port = u.getPort();
+            if (port == -1) {
+                port = 554;
             }
-            ip = host;
-            port = p;
+            uri = new StringBuffer().append(u.getScheme()).append("://").append(ip).append(":").append(port).append(u.getPath()).toString();
+            username = u.getUserInfo().split(":")[0].trim();
+            password = u.getUserInfo().split(":")[1].trim();
             return true;
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getUri() {
+        return uri;
     }
 
     public String getIp() {

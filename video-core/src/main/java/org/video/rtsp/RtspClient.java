@@ -6,6 +6,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import org.video.eum.Method;
 import org.video.eum.Protocol;
+import org.video.exception.BaseException;
 import org.video.exception.FutureException;
 import org.video.netty.Client;
 import org.video.netty.ClientManager;
@@ -55,6 +56,15 @@ public class RtspClient<T> extends RtspClientlInitializer implements Client<Comp
     }
 
     @Override
+    public String uri() {
+        RtspUrlParser p = new RtspUrlParser(url);
+        if(p.parse()){
+            return p.getUri();
+        }
+        throw new BaseException("RtspUrlParser error");
+    }
+
+    @Override
     public Method methodACK() {
         return methodACK;
     }
@@ -64,8 +74,7 @@ public class RtspClient<T> extends RtspClientlInitializer implements Client<Comp
         CompletableFuture<Boolean> cFuture = new CompletableFuture<>();
         try {
             RtspUrlParser rtspUrlParser = new RtspUrlParser(url);
-            boolean success = rtspUrlParser.parse();
-            if (!success) {
+            if (!rtspUrlParser.parse()) {
                 cFuture.completeExceptionally(new FutureException("检查RTSP地址"));
             }
             getBootstrap(this).connect(new InetSocketAddress(rtspUrlParser.getIp(), rtspUrlParser.getPort())).addListener((ChannelFutureListener) future -> {

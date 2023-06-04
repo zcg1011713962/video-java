@@ -18,11 +18,11 @@ public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent idleEvent = (IdleStateEvent) evt;
             if (idleEvent.state() == IdleState.READER_IDLE) {
-                log.error("{}触发读超时事件");
+                log.error("触发读超时事件");
             } else if (idleEvent.state() == IdleState.WRITER_IDLE) {
-                log.error("{}触发写超时事件");
+                log.error("触发写超时事件");
             } else if (idleEvent.state() == IdleState.ALL_IDLE) {
-                log.error("{}触发超时事件");
+                log.error("触发超时事件");
             }
         }
         super.userEventTriggered(ctx, evt);

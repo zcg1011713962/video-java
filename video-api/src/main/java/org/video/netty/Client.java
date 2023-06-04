@@ -15,6 +15,8 @@ public interface Client<T> extends Connection<T> {
 
     String url();
 
+    String uri();
+
     Method methodACK();
 
 }
