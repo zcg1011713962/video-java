@@ -18,7 +18,7 @@ public class RtspClientTest {
             CompletableFuture<Boolean> cFuture = rtspClient.connect();
             cFuture.thenAccept(success ->{
                 if(success){
-                    rtspClient.write(RtspReqPacket.options(rtspUrl), Method.OPTIONS);
+                    rtspClient.write(RtspReqPacket.options(rtspParser.getUri()), Method.OPTIONS);
                 }
             }).exceptionally(e ->{
                 log.error("{}", e.getMessage());

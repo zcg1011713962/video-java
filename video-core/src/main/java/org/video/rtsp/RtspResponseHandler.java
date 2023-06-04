@@ -1,10 +1,9 @@
 package org.video.rtsp;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.rtsp.RtspMethods;
 import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +20,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 @Slf4j
-public class RtspResponseHandler extends SimpleChannelInboundHandler<DefaultHttpResponse> implements ResponseHandler {
+public class RtspResponseHandler extends SimpleChannelInboundHandler<DefaultHttpObject> implements ResponseHandler {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -34,32 +33,41 @@ public class RtspResponseHandler extends SimpleChannelInboundHandler<DefaultHttp
     }
 
     @Override
-    public void channelRead0(ChannelHandlerContext ctx, DefaultHttpResponse msg) throws Exception {
+    public void channelRead0(ChannelHandlerContext ctx, DefaultHttpObject msg) throws Exception {
         Client client = ClientManager.client(ctx.channel().id().asLongText());
         log.info("---------------------------------------");
-        int code = msg.status().code();
-        HttpHeaders headers = msg.headers();
-        String CSeq = headers.get("CSeq");
-        int cseq = Integer.parseInt(CSeq) + 1;
-        if (code == HttpResponseStatus.OK.code()) {
+        log.info("{}", msg);
+        log.info("---------------------------------------");
+        if(msg instanceof DefaultHttpResponse){
+            DefaultHttpResponse httpResponse = (DefaultHttpResponse) msg;
+            int code = httpResponse.status().code();
+            HttpHeaders headers = httpResponse.headers();
+            String CSeq = headers.get("CSeq");
+            int cseq = Integer.parseInt(CSeq) + 1;
             log.info("{}", msg);
-            success(client, cseq);
-        } else {
-            if (code == HttpResponseStatus.UNAUTHORIZED.code()) {
-                // client.write(RtspReqPacket.describe(url), Method.DESCRIBE);
-                // WWW-Authenticate -> Digest realm="IP Camera(J2914)", nonce="446c8be9ca7682b00f43b2bae7e98b86", stale="FALSE"
-                String authenticate = headers.get("WWW-Authenticate");
-                log.info("{}", authenticate);
-                Map<String, String> authMap = decode(authenticate);
-                RtspUrlParser rtspParser = new RtspUrlParser(client.url());
-                if (rtspParser.parse()) {
-                    RTSPDigest digest = new RTSPDigest(rtspParser.getUsername(), authMap.get("realm"), authMap.get("nonce"), rtspParser.getUri(), RtspMethods.DESCRIBE.name(), rtspParser.getPassword());
-                    String response = digest.calculateResponse();
-                    RtspReqPacket.auth(rtspParser.getUri(), rtspParser.getUsername(), authMap.get("nonce"), authMap.get("realm"), response, cseq);
-                    return;
+            if (code == HttpResponseStatus.OK.code()) {
+                success(client, cseq);
+            } else {
+                if (code == HttpResponseStatus.UNAUTHORIZED.code()) {
+                    // WWW-Authenticate -> Digest realm="IP Camera(J2914)", nonce="446c8be9ca7682b00f43b2bae7e98b86", stale="FALSE"
+                    String authenticate = headers.get("WWW-Authenticate");
+                    Map<String, String> authMap = decode(authenticate);
+                    RtspUrlParser rtspParser = new RtspUrlParser(client.url());
+                    if (rtspParser.parse()) {
+                        RTSPDigest digest = new RTSPDigest(rtspParser.getUsername(), authMap.get("realm"), authMap.get("nonce"), rtspParser.getUri(), RtspMethods.DESCRIBE.name(), rtspParser.getPassword());
+                        String response = digest.calculateResponse();
+                        client.write(RtspReqPacket.auth(rtspParser.getUri(), rtspParser.getUsername(), authMap.get("nonce"), authMap.get("realm"), response, cseq), Method.DESCRIBE);
+                        return;
+                    }
                 }
             }
-            log.error("{}", msg);
+        }else if(msg instanceof HttpContent){
+            if(msg instanceof  DefaultHttpContent){
+                DefaultHttpContent httpContent = (DefaultHttpContent) msg;
+                ByteBuf content = httpContent.content();
+            }else if(msg instanceof DefaultLastHttpContent){
+                DefaultLastHttpContent httpContent = (DefaultLastHttpContent) msg;
+            }
         }
     }
 

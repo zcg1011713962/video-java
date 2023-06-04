@@ -113,6 +113,10 @@ public class RtspClient<T> extends RtspClientlInitializer implements Client<Comp
     public static class Builder {
         private String url;
 
+        /**
+         * @param url rtsp://admin:link123456@192.168.7.12:554/h264/ch1/main/av_stream
+         * @return
+         */
         public Builder setUrl(String url) {
             this.url = url;
             return this;

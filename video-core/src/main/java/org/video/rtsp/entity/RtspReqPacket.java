@@ -48,7 +48,7 @@ public class RtspReqPacket {
         options.append("User-Agent:").append(StringUtil.SPACE).append(userAgent).append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
         options.append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
         String message = options.toString();
-        log.info("请求报文:\n {}", message);
+        log.info("请求报文:\n{}", message);
         ByteBuf buf = Unpooled.buffer(message.getBytes().length);
         buf.writeBytes(message.getBytes());
         return buf;
@@ -72,7 +72,7 @@ public class RtspReqPacket {
         describe.append("Accept: application/sdp").append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
         describe.append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
         String message = describe.toString();
-        log.info("请求报文:\n {}", message);
+        log.info("请求报文:\n{}", message);
         ByteBuf buf = Unpooled.buffer(message.getBytes().length);
         buf.writeBytes(message.getBytes());
         return buf;
@@ -98,7 +98,7 @@ public class RtspReqPacket {
         describe.append("Accept: application/sdp").append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
         describe.append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
         String message = describe.toString();
-        log.info("请求报文:\n {}", message);
+        log.info("请求报文:\n{}", message);
         ByteBuf buf = Unpooled.buffer(message.getBytes().length);
         buf.writeBytes(message.getBytes());
         return buf;
@@ -126,7 +126,7 @@ public class RtspReqPacket {
         }
         describe.append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
         String message = describe.toString();
-        log.info("请求报文:\n {}", message);
+        log.info("请求报文:\n{}", message);
         ByteBuf buf = Unpooled.buffer(message.getBytes().length);
         buf.writeBytes(message.getBytes());
         return buf;
@@ -153,7 +153,7 @@ public class RtspReqPacket {
         describe.append("Range:").append(StringUtil.SPACE).append("npt=0.000-").append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
         describe.append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
         String message = describe.toString();
-        log.info("请求报文:\n {}", message);
+        log.info("请求报文:\n{}", message);
         ByteBuf buf = Unpooled.buffer(message.getBytes().length);
         buf.writeBytes(message.getBytes());
         return buf;
