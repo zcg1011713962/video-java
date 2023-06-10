@@ -11,7 +11,9 @@ import org.video.exception.FutureException;
 import org.video.netty.Client;
 import org.video.netty.ClientManager;
 import org.video.rtsp.entity.RtspEntity;
+import org.video.rtsp.entity.RtspReqPacket;
 import org.video.rtsp.init.RtspClientlInitializer;
+import org.video.util.RtspSDParser;
 import org.video.util.RtspUrlParser;
 
 import java.net.InetSocketAddress;
@@ -20,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 public class RtspClient<T> extends RtspClientlInitializer implements Client<CompletableFuture<Boolean>> {
     private String url;
     private Channel channel;
-    private Method methodACK;
+    private RtspSDParser rtspSDParser = new RtspSDParser();
 
     private RtspClient() {
 
@@ -64,9 +66,8 @@ public class RtspClient<T> extends RtspClientlInitializer implements Client<Comp
         throw new BaseException("RtspUrlParser error");
     }
 
-    @Override
-    public Method methodACK() {
-        return methodACK;
+    public RtspSDParser getRtspSDParser() {
+        return rtspSDParser;
     }
 
     @Override
@@ -101,9 +102,6 @@ public class RtspClient<T> extends RtspClientlInitializer implements Client<Comp
         if (channel != null && channel.isOpen()) {
             channel.writeAndFlush(byteBuf).addListener((ChannelFutureListener) f->{
                 if(f.isSuccess()){
-                    methodACK = method;
-                }else{
-                    methodACK = Method.FIN;
                 }
             });
         }

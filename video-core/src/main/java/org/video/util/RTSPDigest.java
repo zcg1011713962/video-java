@@ -1,10 +1,14 @@
 package org.video.util;
 
+import lombok.Data;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 @Slf4j
+@Data
+@ToString
 public class RTSPDigest {
     private String username;
     private String realm;
@@ -60,15 +64,4 @@ public class RTSPDigest {
         return sb.toString();
     }
 
-    @Override
-    public String toString() {
-        return "RTSPDigest{" +
-                "username='" + username + '\'' +
-                ", realm='" + realm + '\'' +
-                ", nonce='" + nonce + '\'' +
-                ", uri='" + uri + '\'' +
-                ", method='" + method + '\'' +
-                ", password='" + password + '\'' +
-                '}';
-    }
 }

@@ -7,44 +7,26 @@ import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.platform.commons.util.StringUtils;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 public class RtspReqPacket {
-    public static ConcurrentMap<String, Boolean> methodACK = new ConcurrentHashMap();
-    private static AtomicInteger cseq = new AtomicInteger();
     private static final String userAgent = "LibVLC/3.0.12 (LIVE555 Streaming Media v2016.11.28)";
-
-
-    static {
-        Method[] methods = RtspReqPacket.class.getMethods();
-        for (Method method : methods) {
-            if (Modifier.isStatic(method.getModifiers())) {
-                // 是静态方法
-                String methodName = method.getName();
-                methodACK.put(methodName, false);
-            }
-        }
-    }
-
+    public static AtomicInteger commonCseq = new AtomicInteger();
     /**
      * 用于请求服务器所支持的所有方法
      * OPTIONS rtsp://192.168.7.12:554/h264/ch1/main/av_stream RTSP/1.0
      * CSeq: 2
      * User-Agent: LibVLC/3.0.17.4 (LIVE555 Streaming Media v2016.11.28)
      */
-    public static ByteBuf options(String uri) {
+    public static ByteBuf options(String uri, int cseq) {
         StringBuffer options = new StringBuffer();
         options.append(RtspMethods.OPTIONS);
         options.append(StringUtil.SPACE);
         options.append(uri);
         options.append(StringUtil.SPACE);
         options.append("RTSP/1.0").append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
-        options.append("CSeq:").append(StringUtil.SPACE).append(cseq.getAndIncrement()).append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
+        options.append("CSeq:").append(StringUtil.SPACE).append(cseq).append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
         options.append("User-Agent:").append(StringUtil.SPACE).append(userAgent).append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
         options.append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
         String message = options.toString();
@@ -111,14 +93,14 @@ public class RtspReqPacket {
      * User-Agent: LibVLC/3.0.17.4 (LIVE555 Streaming Media v2016.11.28)
      * Transport: RTP/AVP;unicast;client_port=63674-63675
      */
-    public static ByteBuf setup(String uri, String transport, String trackID, String session) {
+    public static ByteBuf setup(String uri, String transport, String trackID, String session, int cseq) {
         StringBuffer describe = new StringBuffer();
         describe.append(RtspMethods.SETUP);
         describe.append(StringUtil.SPACE);
         describe.append(uri).append("/").append(trackID);
         describe.append(StringUtil.SPACE);
         describe.append("RTSP/1.0").append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
-        describe.append("CSeq:").append(StringUtil.SPACE).append(cseq.getAndIncrement()).append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
+        describe.append("CSeq:").append(StringUtil.SPACE).append(cseq).append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
         describe.append("User-Agent:").append(StringUtil.SPACE).append(userAgent).append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
         describe.append("Transport:").append(StringUtil.SPACE).append(transport).append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
         if (!StringUtils.isBlank(session)) {
@@ -140,14 +122,14 @@ public class RtspReqPacket {
      * Session: 285083930
      * Range: npt=0.000-
      */
-    public static ByteBuf play(String uri, String session) {
+    public static ByteBuf play(String uri, String session, int cseq) {
         StringBuffer describe = new StringBuffer();
         describe.append(RtspMethods.PLAY);
         describe.append(StringUtil.SPACE);
         describe.append(uri).append("/");
         describe.append(StringUtil.SPACE);
         describe.append("RTSP/1.0").append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
-        describe.append("CSeq:").append(StringUtil.SPACE).append(cseq.getAndIncrement()).append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
+        describe.append("CSeq:").append(StringUtil.SPACE).append(cseq).append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
         describe.append("User-Agent:").append(StringUtil.SPACE).append(userAgent).append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
         describe.append("Session:").append(StringUtil.SPACE).append(session).append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
         describe.append("Range:").append(StringUtil.SPACE).append("npt=0.000-").append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);

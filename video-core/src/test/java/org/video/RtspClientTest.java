@@ -13,18 +13,18 @@ public class RtspClientTest {
     public static void main(String[] args) throws InterruptedException {
         String rtspUrl = "rtsp://admin:link123456@192.168.7.12:554/h264/ch1/main/av_stream";
         RtspUrlParser rtspParser = new RtspUrlParser(rtspUrl);
-        if(rtspParser.parse()){
+        if (rtspParser.parse()) {
             RtspClient rtspClient = new RtspClient.Builder().setUrl(rtspUrl).build();
             CompletableFuture<Boolean> cFuture = rtspClient.connect();
-            cFuture.thenAccept(success ->{
-                if(success){
-                    rtspClient.write(RtspReqPacket.options(rtspParser.getUri()), Method.OPTIONS);
+            cFuture.thenAccept(success -> {
+                if (success) {
+                    rtspClient.write(RtspReqPacket.options(rtspParser.getUri(), RtspReqPacket.commonCseq.getAndIncrement()), Method.OPTIONS);
                 }
-            }).exceptionally(e ->{
+            }).exceptionally(e -> {
                 log.error("{}", e.getMessage());
                 return null;
             });
-        }else{
+        } else {
             log.info("RtspUrlParser error");
         }
     }
