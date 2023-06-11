@@ -4,7 +4,7 @@ import cn.hutool.core.lang.UUID;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
-import org.video.eum.Method;
+import lombok.extern.slf4j.Slf4j;
 import org.video.eum.Protocol;
 import org.video.exception.BaseException;
 import org.video.exception.FutureException;
@@ -18,20 +18,34 @@ import org.video.util.RtspUrlParser;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
-
+@Slf4j
 public class RtspClient<T> extends RtspClientlInitializer implements Client<CompletableFuture<Boolean>> {
     private String url;
     private Channel channel;
+    private RtspEntity rtspEntity;
     private RtspSDParser rtspSDParser = new RtspSDParser();
 
-    private RtspClient() {
-
+    private RtspClient(String url) {
+        this.url = url;
     }
 
-    private void init(String url) {
-        this.url = url;
-        protocolMap.put(protocol(), new RtspEntity(this, url));
-        ClientManager.put(id(), this);
+    @Override
+    public CompletableFuture<Boolean> init() {
+        RtspUrlParser rtspParser = new RtspUrlParser(url);
+        if (rtspParser.parse()) {
+            rtspEntity = new RtspEntity(this, rtspParser.getUri(), rtspParser.getUsername(), rtspParser.getPassword());
+            protocolMap.put(protocol(), rtspEntity);
+            ClientManager.put(id(), this);
+        } else {
+            CompletableFuture.completedFuture(new BaseException("解析url错误"));
+        }
+        return connect().thenApply(success -> {
+            if (success) {
+                write(RtspReqPacket.options(rtspParser.getUri(), RtspReqPacket.commonCseq.getAndIncrement()));
+                return true;
+            }
+            return false;
+        });
     }
 
     @Override
@@ -46,28 +60,23 @@ public class RtspClient<T> extends RtspClientlInitializer implements Client<Comp
 
     @Override
     public Channel channel() {
-        if(channel !=null && channel.isOpen()){
+        if (channel != null && channel.isOpen()) {
             return channel;
         }
         return null;
     }
 
-    @Override
-    public String url() {
-        return url;
-    }
-
-    @Override
-    public String uri() {
-        RtspUrlParser p = new RtspUrlParser(url);
-        if(p.parse()){
-            return p.getUri();
-        }
-        throw new BaseException("RtspUrlParser error");
-    }
 
     public RtspSDParser getRtspSDParser() {
         return rtspSDParser;
+    }
+
+    public RtspEntity getRtspEntity() {
+        return rtspEntity;
+    }
+
+    public void setRtspEntity(RtspEntity rtspEntity) {
+        this.rtspEntity = rtspEntity;
     }
 
     @Override
@@ -98,14 +107,18 @@ public class RtspClient<T> extends RtspClientlInitializer implements Client<Comp
     }
 
     @Override
-    public CompletableFuture<Boolean> write(ByteBuf byteBuf, Method method) {
+    public CompletableFuture<Boolean> write(ByteBuf byteBuf) {
+        CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
         if (channel != null && channel.isOpen()) {
-            channel.writeAndFlush(byteBuf).addListener((ChannelFutureListener) f->{
-                if(f.isSuccess()){
+            channel.writeAndFlush(byteBuf).addListener((ChannelFutureListener) f -> {
+                if (f.isSuccess()) {
+                    completableFuture.complete(true);
+                } else {
+                    completableFuture.completeExceptionally(f.cause());
                 }
             });
         }
-        return CompletableFuture.completedFuture(false);
+        return completableFuture;
     }
 
     public static class Builder {
@@ -120,10 +133,10 @@ public class RtspClient<T> extends RtspClientlInitializer implements Client<Comp
             return this;
         }
 
-        public RtspClient build() {
-            RtspClient rtspClient = new RtspClient();
-            rtspClient.init(url);
-            return rtspClient;
+        public CompletableFuture<Boolean> build() {
+            RtspClient rtspClient = new RtspClient(url);
+            CompletableFuture future = rtspClient.init();
+            return future;
         }
 
     }

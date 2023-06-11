@@ -11,13 +11,14 @@ import java.io.Serializable;
 public class RtspSDParser implements Serializable {
 
     private StringBuffer sdp = new StringBuffer();
-    private String cseq;
+    private int cseq;
     private String contentType;
     private String contentBase;
     private int contentLength;
     private int vPort;
     private int aPort;
     private int trackID;
+    private String transport;
 
     public RtspSDParser append(String str) {
         sdp.append(str);
@@ -48,7 +49,9 @@ public class RtspSDParser implements Serializable {
                 if (c.contains("audio")) {
 
                 } else if (c.contains("video")) {
-
+                    String [] v = c.split(StrUtil.SPACE);
+                    vPort= Integer.parseInt(v[1]);
+                    transport = v[2];
                 }
             }
         }

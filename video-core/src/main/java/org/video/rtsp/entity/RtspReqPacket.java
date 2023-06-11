@@ -93,16 +93,18 @@ public class RtspReqPacket {
      * User-Agent: LibVLC/3.0.17.4 (LIVE555 Streaming Media v2016.11.28)
      * Transport: RTP/AVP;unicast;client_port=63674-63675
      */
-    public static ByteBuf setup(String uri, String transport, String trackID, String session, int cseq) {
+    public static ByteBuf setup(String uri, String transport, int rtpPort, int rtcpPort, int trackID, String session, String userName, String nonce, String realm, String response, int cseq) {
         StringBuffer describe = new StringBuffer();
         describe.append(RtspMethods.SETUP);
         describe.append(StringUtil.SPACE);
-        describe.append(uri).append("/").append(trackID);
+        describe.append(uri).append("/trackID=").append(trackID);
         describe.append(StringUtil.SPACE);
         describe.append("RTSP/1.0").append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
         describe.append("CSeq:").append(StringUtil.SPACE).append(cseq).append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
+        describe.append("Authorization: Digest username=\"").append(userName).append("\", realm=\"").append(realm).append("\", nonce=\"").append(nonce).append("\", uri=\"").append(uri).append("\", response=\"").append(response).append("\"").append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
         describe.append("User-Agent:").append(StringUtil.SPACE).append(userAgent).append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
-        describe.append("Transport:").append(StringUtil.SPACE).append(transport).append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
+        // unicast：表示单播，如果是multicast则表示多播 client_port=54492-54493：由于这里希望采用的是RTP OVER UDP，所以客户端发送了两个用于传输数据的端口，客户端已经将这两个端口绑定到两个udp套接字上，54492表示是RTP端口，54493表示RTCP端口(RTP端口为某个偶数，RTCP端口为RTP端口+1)
+        describe.append("Transport:").append(StringUtil.SPACE).append(transport).append(";unicast;client_port=").append(rtpPort).append("-").append(rtcpPort).append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
         if (!StringUtils.isBlank(session)) {
             describe.append("Session:").append(StringUtil.SPACE).append(session).append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
         }

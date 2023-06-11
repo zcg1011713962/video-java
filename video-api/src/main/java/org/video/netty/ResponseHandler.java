@@ -1,4 +1,4 @@
 package org.video.netty;
 
-public interface ResponseHandler {
+public interface ResponseHandler<T> {
 }
