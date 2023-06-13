@@ -1,10 +1,11 @@
 package org.video.rtsp;
 
-import cn.hutool.core.lang.UUID;
+import cn.hutool.core.util.StrUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import lombok.extern.slf4j.Slf4j;
+import org.common.util.Md5Util;
 import org.video.eum.Protocol;
 import org.video.exception.BaseException;
 import org.video.exception.FutureException;
@@ -20,13 +21,16 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class RtspClient<T> extends RtspClientlInitializer implements Client<CompletableFuture<Boolean>> {
+    private String clientId;
     private String url;
     private Channel channel;
     private RtspEntity rtspEntity;
     private RtspSDParser rtspSDParser = new RtspSDParser();
 
-    private RtspClient(String url) {
+    private RtspClient(String url, boolean proxy, String clientId) {
+        super(proxy);
         this.url = url;
+        this.clientId = clientId;
     }
 
     @Override
@@ -50,7 +54,10 @@ public class RtspClient<T> extends RtspClientlInitializer implements Client<Comp
 
     @Override
     public String id() {
-        return UUID.fastUUID().toString();
+        if(StrUtil.isBlank(clientId)){
+            return Md5Util.calculateMD5(url);
+        }
+        return clientId;
     }
 
     @Override
@@ -123,6 +130,8 @@ public class RtspClient<T> extends RtspClientlInitializer implements Client<Comp
 
     public static class Builder {
         private String url;
+        private String clientId;
+        private boolean proxy;
 
         /**
          * @param url rtsp://admin:link123456@192.168.7.12:554/h264/ch1/main/av_stream
@@ -133,8 +142,18 @@ public class RtspClient<T> extends RtspClientlInitializer implements Client<Comp
             return this;
         }
 
+        public Builder setProxy(boolean proxy) {
+            this.proxy = proxy;
+            return this;
+        }
+
+        public Builder setClientId(String clientId) {
+            this.clientId = clientId;
+            return this;
+        }
+
         public CompletableFuture<Boolean> build() {
-            RtspClient rtspClient = new RtspClient(url);
+            RtspClient rtspClient = new RtspClient(url, proxy, clientId);
             CompletableFuture future = rtspClient.init();
             return future;
         }

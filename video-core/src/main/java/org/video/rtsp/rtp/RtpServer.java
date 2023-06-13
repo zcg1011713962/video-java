@@ -18,7 +18,8 @@ public class RtpServer extends RtpServerlInitializer implements Server<Completab
     private int port;
     private Channel channel;
 
-    private RtpServer(int port){
+    private RtpServer(int port, boolean proxy){
+        super(proxy);
         this.port = port;
     }
 
@@ -82,14 +83,20 @@ public class RtpServer extends RtpServerlInitializer implements Server<Completab
 
     public static class Builder {
         private int port;
+        private boolean proxy;
 
-        public RtpServer.Builder setPort(int port) {
+        public Builder setPort(int port) {
             this.port = port;
             return this;
         }
 
+        public Builder setProxy(boolean proxy) {
+            this.proxy = proxy;
+            return this;
+        }
+
         public CompletableFuture<Boolean> build() {
-            RtpServer rtpServer = new RtpServer(port);
+            RtpServer rtpServer = new RtpServer(port, proxy);
             return rtpServer.init();
         }
 

@@ -54,9 +54,9 @@ public abstract class DefaultRtspMethodHandler<T> extends RtspMethodHandler<Rtsp
             RtspEntity rtspEntity = rtspClient.getRtspEntity();
             RTSPDigest digest = new RTSPDigest(rtspEntity.getUserName(), rtspEntity.getRealm(), rtspEntity.getNonce(), rtspEntity.getUri(), RtspMethods.SETUP.name(), rtspEntity.getPassword());
             String response = digest.calculateResponse();
-            int rtpPort = 62054;
-            int rtcpPort = 62055;
-            new RtpServer.Builder().setPort(rtpPort).build().thenAccept(success ->{
+            int rtpPort = 10998;
+            int rtcpPort = 10999;
+            new RtpServer.Builder().setPort(rtpPort).setProxy(true).build().thenAccept(success ->{
                 if(success){
                     rtspClient.write(RtspReqPacket.setup(rtspEntity.getUri(), rtspSDParser.getTransport(), rtpPort, rtcpPort, rtspSDParser.getTrackID(), StrUtil.EMPTY, rtspEntity.getUserName(), rtspEntity.getNonce(), rtspEntity.getRealm(), response, rtspClient.getRtspSDParser().getCseq()));
                 }
@@ -77,6 +77,9 @@ public abstract class DefaultRtspMethodHandler<T> extends RtspMethodHandler<Rtsp
         String [] s = sessionLine.split(";");
         String session = s[0].trim();
         String timeout = s[1].split("=")[1].trim();
+        rtspClient.getRtspSDParser().setLastCseq(cseq);
+        rtspClient.getRtspSDParser().setSession(session);
         rtspClient.write(RtspReqPacket.play(rtspClient.getRtspEntity().getUri(), session, cseq));
+
     }
 }

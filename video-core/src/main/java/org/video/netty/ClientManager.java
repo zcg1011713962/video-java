@@ -10,10 +10,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class ClientManager {
+    // forbid null key and value
     private static ConcurrentMap<String, Client> clientMap = new ConcurrentHashMap();
 
     public static Client put(String clientId, Client client) {
         return clientMap.putIfAbsent(clientId, client);
+    }
+
+    public static Client get(String clientId) {
+        return clientMap.get(clientId);
     }
 
     public static Channel channel(String channelId) {

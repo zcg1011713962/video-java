@@ -19,6 +19,9 @@ public class RtspSDParser implements Serializable {
     private int aPort;
     private int trackID;
     private String transport;
+    // 断开有用
+    private String session;
+    private int lastCseq;
 
     public RtspSDParser append(String str) {
         sdp.append(str);

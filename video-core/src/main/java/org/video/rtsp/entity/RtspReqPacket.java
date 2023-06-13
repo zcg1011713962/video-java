@@ -143,4 +143,33 @@ public class RtspReqPacket {
         return buf;
     }
 
+
+    /**
+     * 停止播放 teardown
+     * @param uri
+     * @param session
+     * @param cseq
+     * @return
+     */
+    public static ByteBuf teardown(String uri, String session, int cseq) {
+        StringBuffer describe = new StringBuffer();
+        describe.append(RtspMethods.TEARDOWN);
+        describe.append(StringUtil.SPACE);
+        describe.append(uri).append("/");
+        describe.append(StringUtil.SPACE);
+        describe.append("RTSP/1.0").append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
+        describe.append("CSeq:").append(StringUtil.SPACE).append(cseq).append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
+        describe.append("User-Agent:").append(StringUtil.SPACE).append(userAgent).append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
+        describe.append("Session:").append(StringUtil.SPACE).append(session).append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
+        describe.append(StringUtil.CARRIAGE_RETURN).append(StringUtil.LINE_FEED);
+        String message = describe.toString();
+        log.info("请求报文:\n{}", message);
+        ByteBuf buf = Unpooled.buffer(message.getBytes().length);
+        buf.writeBytes(message.getBytes());
+        return buf;
+    }
+
+
+
+
 }
