@@ -7,12 +7,12 @@ import io.netty.channel.AdaptiveRecvByteBufAllocator;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import org.video.entity.BaseEntity;
 import org.video.eum.Protocol;
+import org.video.netty.manager.EventLoopGroupManager;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -27,7 +27,7 @@ public interface Connection<T> extends ClientHandle<T>, ServerHandle<T> {
      * @return
      */
     default EventLoopGroup getBossGroup(){
-        return new NioEventLoopGroup(1);
+        return EventLoopGroupManager.getBossGroup();
     }
 
     /**
@@ -36,7 +36,7 @@ public interface Connection<T> extends ClientHandle<T>, ServerHandle<T> {
      * @return
      */
     default EventLoopGroup getWorkerGroup(){
-        return new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2);
+        return EventLoopGroupManager.getWorkGroup();
     }
 
     /**

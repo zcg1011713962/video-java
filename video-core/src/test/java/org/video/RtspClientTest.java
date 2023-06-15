@@ -1,6 +1,7 @@
 package org.video;
 
 import lombok.extern.slf4j.Slf4j;
+import org.video.netty.manager.EventLoopGroupManager;
 import org.video.rtsp.RtspClient;
 import org.video.util.RtspUrlParser;
 
@@ -16,6 +17,8 @@ public class RtspClientTest {
             log.info("{}", f);
         }).exceptionally(e -> {
             log.error("{}", e);
+            EventLoopGroupManager.getBossGroup().shutdownGracefully();
+            EventLoopGroupManager.getWorkGroup().shutdownGracefully();
             return null;
         });
     }
