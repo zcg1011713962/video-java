@@ -12,8 +12,7 @@ public class RtspEntity extends BaseEntity {
     private String password;
     private String authenticate;
 
-    public RtspEntity(ChannelHandler channelHandler, String uri, String userName, String password) {
-        super(channelHandler);
+    public RtspEntity(String uri, String userName, String password) {
         this.userName = userName;
         this.password = password;
         this.uri = uri;

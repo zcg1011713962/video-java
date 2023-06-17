@@ -7,20 +7,18 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import lombok.extern.slf4j.Slf4j;
 import org.video.eum.Protocol;
-import org.video.netty.Server;
 import org.video.netty.ServerManager;
-import org.video.rtsp.entity.RtpEntity;
-import org.video.rtsp.init.RtpServerlInitializer;
+import org.video.netty.abs.AbstractServer;
 
 import java.util.concurrent.CompletableFuture;
 @Slf4j
-public class RtpServer extends RtpServerlInitializer implements Server<CompletableFuture<Boolean>> {
+public class RtpServer extends AbstractServer<CompletableFuture<Boolean>> {
     private int port;
     private Channel channel;
 
 
-    private RtpServer(int port, boolean proxy){
-        super(proxy);
+    private RtpServer(int port){
+        super.channelHandler(protocol());
         this.port = port;
     }
 
@@ -44,8 +42,6 @@ public class RtpServer extends RtpServerlInitializer implements Server<Completab
 
     @Override
     public CompletableFuture<Boolean> init() {
-        RtpEntity rtpEntity = new RtpEntity(this);
-        protocolMap.put(protocol(), rtpEntity);
         ServerManager.put(id(), this);
         return bind();
     }
@@ -54,11 +50,11 @@ public class RtpServer extends RtpServerlInitializer implements Server<Completab
     public CompletableFuture<Boolean> bind() {
         CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
         try {
-            Bootstrap udpServer = getUDPServer(this);
+            Bootstrap udpServer = getUDPServer();
             udpServer.bind(port).sync().addListener((ChannelFutureListener) f -> {
                 if (f.isSuccess()) {
                     channel = f.channel();
-                    log.info("bind udp-{} success", port);
+                    log.info("成功监听UDP端口-{}", port);
                     completableFuture.complete(true);
                 } else {
                     completableFuture.completeExceptionally(f.cause());
@@ -84,20 +80,14 @@ public class RtpServer extends RtpServerlInitializer implements Server<Completab
 
     public static class Builder {
         private int port;
-        private boolean proxy;
 
         public Builder setPort(int port) {
             this.port = port;
             return this;
         }
 
-        public Builder setProxy(boolean proxy) {
-            this.proxy = proxy;
-            return this;
-        }
-
         public CompletableFuture<Boolean> build() {
-            RtpServer rtpServer = new RtpServer(port, proxy);
+            RtpServer rtpServer = new RtpServer(port);
             return rtpServer.init();
         }
 

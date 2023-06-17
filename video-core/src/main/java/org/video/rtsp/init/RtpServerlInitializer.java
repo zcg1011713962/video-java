@@ -3,10 +3,7 @@ package org.video.rtsp.init;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.nio.NioDatagramChannel;
-import io.netty.handler.proxy.Socks4ProxyHandler;
 import org.video.rtsp.rtp.RtpResponseHandler;
-
-import java.net.InetSocketAddress;
 
 /**
  * 入站事件在ChannelPipeline中由头指针向尾指针传播，只处理Inbound类型的Handler

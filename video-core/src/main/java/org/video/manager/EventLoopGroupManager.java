@@ -1,4 +1,4 @@
-package org.video.netty.manager;
+package org.video.manager;
 
 import io.netty.channel.nio.NioEventLoopGroup;
 

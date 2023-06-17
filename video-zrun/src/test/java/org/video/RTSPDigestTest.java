@@ -1,8 +1,8 @@
 package org.video;
 
 import lombok.extern.slf4j.Slf4j;
-import org.video.util.RTSPDigest;
-import org.video.util.RtspUrlParser;
+import org.video.rtsp.entity.RTSPDigest;
+import org.video.rtsp.entity.RtspUrlParser;
 @Slf4j
 public class RTSPDigestTest {
     public static void main(String[] args) {

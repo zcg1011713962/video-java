@@ -1,4 +1,4 @@
-package org.video.util;
+package org.video.rtsp.entity;
 
 import java.net.URI;
 

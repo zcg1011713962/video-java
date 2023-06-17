@@ -9,26 +9,25 @@ import org.common.util.Md5Util;
 import org.video.eum.Protocol;
 import org.video.exception.BaseException;
 import org.video.exception.FutureException;
-import org.video.netty.Client;
 import org.video.netty.ClientManager;
+import org.video.netty.abs.AbstractClient;
 import org.video.rtsp.entity.RtspEntity;
 import org.video.rtsp.entity.RtspReqPacket;
-import org.video.rtsp.init.RtspClientlInitializer;
-import org.video.util.RtspSDParser;
-import org.video.util.RtspUrlParser;
+import org.video.rtsp.entity.RtspSDParser;
+import org.video.rtsp.entity.RtspUrlParser;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 @Slf4j
-public class RtspClient<T> extends RtspClientlInitializer implements Client<CompletableFuture<Boolean>> {
+public class RtspClient<T> extends AbstractClient<CompletableFuture<Boolean>> {
     private String clientId;
     private String url;
     private Channel channel;
     private RtspEntity rtspEntity;
     private RtspSDParser rtspSDParser = new RtspSDParser();
 
-    private RtspClient(String url, boolean proxy, String clientId) {
-        super(proxy);
+    private RtspClient(String url, String clientId) {
+        super.channelHandler(protocol());
         this.url = url;
         this.clientId = clientId;
     }
@@ -37,8 +36,7 @@ public class RtspClient<T> extends RtspClientlInitializer implements Client<Comp
     public CompletableFuture<Boolean> init() {
         RtspUrlParser rtspParser = new RtspUrlParser(url);
         if (rtspParser.parse()) {
-            rtspEntity = new RtspEntity(this, rtspParser.getUri(), rtspParser.getUsername(), rtspParser.getPassword());
-            protocolMap.put(protocol(), rtspEntity);
+            rtspEntity = new RtspEntity(rtspParser.getUri(), rtspParser.getUsername(), rtspParser.getPassword());
             ClientManager.put(id(), this);
         } else {
             CompletableFuture.completedFuture(new BaseException("解析url错误"));
@@ -82,10 +80,6 @@ public class RtspClient<T> extends RtspClientlInitializer implements Client<Comp
         return rtspEntity;
     }
 
-    public void setRtspEntity(RtspEntity rtspEntity) {
-        this.rtspEntity = rtspEntity;
-    }
-
     @Override
     public CompletableFuture<Boolean> connect() {
         CompletableFuture<Boolean> cFuture = new CompletableFuture<>();
@@ -94,7 +88,7 @@ public class RtspClient<T> extends RtspClientlInitializer implements Client<Comp
             if (!rtspUrlParser.parse()) {
                 cFuture.completeExceptionally(new FutureException("检查RTSP地址"));
             }
-            getBootstrap(this).connect(new InetSocketAddress(rtspUrlParser.getIp(), rtspUrlParser.getPort())).addListener((ChannelFutureListener) future -> {
+            getTcpClient().connect(new InetSocketAddress(rtspUrlParser.getIp(), rtspUrlParser.getPort())).addListener((ChannelFutureListener) future -> {
                 if (future.isSuccess()) {
                     channel = future.channel();
                     cFuture.complete(true);
@@ -131,7 +125,6 @@ public class RtspClient<T> extends RtspClientlInitializer implements Client<Comp
     public static class Builder {
         private String url;
         private String clientId;
-        private boolean proxy;
 
         /**
          * @param url rtsp://admin:link123456@192.168.7.12:554/h264/ch1/main/av_stream
@@ -142,18 +135,13 @@ public class RtspClient<T> extends RtspClientlInitializer implements Client<Comp
             return this;
         }
 
-        public Builder setProxy(boolean proxy) {
-            this.proxy = proxy;
-            return this;
-        }
-
         public Builder setClientId(String clientId) {
             this.clientId = clientId;
             return this;
         }
 
         public CompletableFuture<Boolean> build() {
-            RtspClient rtspClient = new RtspClient(url, proxy, clientId);
+            RtspClient rtspClient = new RtspClient(url, clientId);
             CompletableFuture future = rtspClient.init();
             return future;
         }

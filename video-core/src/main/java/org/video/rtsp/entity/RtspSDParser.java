@@ -1,10 +1,11 @@
-package org.video.util;
+package org.video.rtsp.entity;
 
 import cn.hutool.core.util.StrUtil;
 import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Data
 @ToString
@@ -15,13 +16,21 @@ public class RtspSDParser implements Serializable {
     private String contentType;
     private String contentBase;
     private int contentLength;
+    // 视频端口
     private int vPort;
+    // 音频端口
     private int aPort;
     private int trackID;
     private String transport;
     // 断开有用
     private String session;
     private int lastCseq;
+    // 获取流超时时间
+    private int timeout;
+    // 超时监听标识
+    private AtomicBoolean confirmedTimeout = new AtomicBoolean();
+    // 收到RTP包标识
+    private boolean receivedRtp;
 
     public RtspSDParser append(String str) {
         sdp.append(str);

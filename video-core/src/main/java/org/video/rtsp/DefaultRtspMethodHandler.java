@@ -9,11 +9,16 @@ import org.video.exception.BaseException;
 import org.video.rtsp.entity.RtspEntity;
 import org.video.rtsp.entity.RtspReqPacket;
 import org.video.rtsp.rtp.RtpServer;
-import org.video.util.RTSPDigest;
-import org.video.util.RtspSDParser;
+import org.video.rtsp.rtp.VideoACK;
+import org.video.rtsp.entity.RTSPDigest;
+import org.video.rtsp.entity.RtspSDParser;
+import org.video.util.PortUtil;
 import org.video.util.RtspUtil;
+import org.video.util.ThreadPoolUtil;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 @Slf4j
 public abstract class DefaultRtspMethodHandler<T> extends RtspMethodHandler<RtspClient>{
 
@@ -54,9 +59,9 @@ public abstract class DefaultRtspMethodHandler<T> extends RtspMethodHandler<Rtsp
             RtspEntity rtspEntity = rtspClient.getRtspEntity();
             RTSPDigest digest = new RTSPDigest(rtspEntity.getUserName(), rtspEntity.getRealm(), rtspEntity.getNonce(), rtspEntity.getUri(), RtspMethods.SETUP.name(), rtspEntity.getPassword());
             String response = digest.calculateResponse();
-            int rtpPort = 10998;
-            int rtcpPort = 10999;
-            new RtpServer.Builder().setPort(rtpPort).setProxy(true).build().thenAccept(success ->{
+            int rtpPort = PortUtil.offerPort(true);
+            int rtcpPort = PortUtil.offerPort(false);
+            new RtpServer.Builder().setPort(rtpPort).build().thenAccept(success ->{
                 if(success){
                     rtspClient.write(RtspReqPacket.setup(rtspEntity.getUri(), rtspSDParser.getTransport(), rtpPort, rtcpPort, rtspSDParser.getTrackID(), StrUtil.EMPTY, rtspEntity.getUserName(), rtspEntity.getNonce(), rtspEntity.getRealm(), response, rtspClient.getRtspSDParser().getCseq()));
                 }
@@ -77,9 +82,15 @@ public abstract class DefaultRtspMethodHandler<T> extends RtspMethodHandler<Rtsp
         String [] s = sessionLine.split(";");
         String session = s[0].trim();
         String timeout = s[1].split("=")[1].trim();
+        int t = StrUtil.isBlank(timeout) ? 60 : Integer.parseInt(timeout);
         rtspClient.getRtspSDParser().setLastCseq(cseq);
         rtspClient.getRtspSDParser().setSession(session);
+        rtspClient.getRtspSDParser().setTimeout(t);
+        if(rtspClient.getRtspSDParser().getConfirmedTimeout().compareAndSet(false, true)){
+            ThreadPoolUtil.videoSchedulerExecutor().schedule(new VideoACK(rtspClient.getRtspSDParser()), t, TimeUnit.SECONDS);
+        }
         rtspClient.write(RtspReqPacket.play(rtspClient.getRtspEntity().getUri(), session, cseq));
-
     }
+
+
 }
