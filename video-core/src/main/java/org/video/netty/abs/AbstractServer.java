@@ -33,14 +33,17 @@ public abstract class AbstractServer<T> implements Server<T> {
 
     @Override
     public Bootstrap getUDPServer() {
-        if(bootstrap != null){
-            return bootstrap;
+        if(bootstrap == null){
+            synchronized (Server.class){
+                if(bootstrap == null) {
+                    bootstrap = new Bootstrap().group(getWorkerGroup())
+                            .option(ChannelOption.SO_BROADCAST, true)
+                            .channel(NioDatagramChannel.class)
+                            // .handler(loggingHandler)
+                            .handler(channelHandler);
+                }
+            }
         }
-        bootstrap = new Bootstrap().group(getWorkerGroup())
-                .option(ChannelOption.SO_BROADCAST, true)
-                .channel(NioDatagramChannel.class)
-                // .handler(loggingHandler)
-                .handler(channelHandler);
         return bootstrap;
     }
 

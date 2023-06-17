@@ -34,16 +34,19 @@ public abstract class AbstractClient<T> implements Client<T> {
 
     @Override
     public Bootstrap getTcpClient() {
-        if (bootstrap != null) {
-            return bootstrap;
+        if (bootstrap == null) {
+            synchronized (Client.class){
+                if(bootstrap == null){
+                    bootstrap = new Bootstrap().group(getWorkerGroup())
+                            .channel(NioSocketChannel.class)
+                            .handler(channelHandler)
+                            .option(ChannelOption.SO_KEEPALIVE, true) // 长连接
+                            .option(ChannelOption.SO_RCVBUF, Integer.MAX_VALUE)
+                            .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(64, 1024, 65536 * 100))
+                            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 15);
+                }
+            }
         }
-        bootstrap = new Bootstrap().group(getWorkerGroup())
-                .channel(NioSocketChannel.class)
-                .handler(channelHandler)
-                .option(ChannelOption.SO_KEEPALIVE, true) // 长连接
-                .option(ChannelOption.SO_RCVBUF, Integer.MAX_VALUE)
-                .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(64, 1024, 65536 * 100))
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 15);
         return bootstrap;
     }
 }
