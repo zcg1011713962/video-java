@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class ClientManager {
-    // forbid null key and value
+    // <clientId,client> forbid null key and value
     private static ConcurrentMap<String, Client> clientMap = new ConcurrentHashMap();
 
     public static Client put(String clientId, Client client) {
@@ -44,6 +44,10 @@ public class ClientManager {
             }
         }
         throw new BaseException("根据channelId" + channelId + "获取不到client");
+    }
+
+    public static Client remove(String clientId) {
+        return clientMap.remove(clientId);
     }
 
 }

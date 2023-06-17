@@ -7,9 +7,12 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import lombok.extern.slf4j.Slf4j;
 import org.video.eum.Protocol;
+import org.video.exception.BaseException;
+import org.video.manager.CacheManager;
 import org.video.netty.ServerManager;
 import org.video.netty.abs.AbstractServer;
 
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class RtpServer extends AbstractServer<CompletableFuture<Boolean>> {
@@ -74,7 +77,17 @@ public class RtpServer extends AbstractServer<CompletableFuture<Boolean>> {
 
     @Override
     public CompletableFuture<Boolean> close() {
-        return null;
+        CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
+        channel.close().addListener((ChannelFutureListener)f ->{
+            if(f.isSuccess()){
+                if(Objects.isNull(ServerManager.remove(id()))){
+                    completableFuture.complete(true);
+                }
+                completableFuture.completeExceptionally(new BaseException("ServerManager 移除服务端缓存失败" + id()));
+            }
+            completableFuture.completeExceptionally(f.cause());
+        });
+        return completableFuture;
     }
 
 

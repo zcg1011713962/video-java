@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class ServerManager {
+    // <serverId, server>
     private static ConcurrentMap<String, Server> serverMap = new ConcurrentHashMap();
 
     public static Server put(String serverId, Server server) {
@@ -27,6 +28,10 @@ public class ServerManager {
             }
         }
         throw new BaseException("根据channelId" + channelId + "获取不到server");
+    }
+
+    public static Server remove(String serverId) {
+        return serverMap.remove(serverId);
     }
 
 }

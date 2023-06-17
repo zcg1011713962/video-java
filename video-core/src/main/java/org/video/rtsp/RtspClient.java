@@ -10,6 +10,7 @@ import org.video.eum.Protocol;
 import org.video.exception.BaseException;
 import org.video.exception.FutureException;
 import org.video.netty.ClientManager;
+import org.video.netty.ServerManager;
 import org.video.netty.abs.AbstractClient;
 import org.video.rtsp.entity.RtspEntity;
 import org.video.rtsp.entity.RtspReqPacket;
@@ -17,6 +18,7 @@ import org.video.rtsp.entity.RtspSDParser;
 import org.video.rtsp.entity.RtspUrlParser;
 
 import java.net.InetSocketAddress;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class RtspClient<T> extends AbstractClient<CompletableFuture<Boolean>> {
@@ -104,7 +106,17 @@ public class RtspClient<T> extends AbstractClient<CompletableFuture<Boolean>> {
 
     @Override
     public CompletableFuture<Boolean> close() {
-        return CompletableFuture.completedFuture(false);
+        CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
+        channel.close().addListener((ChannelFutureListener)f ->{
+            if(f.isSuccess()){
+                if(Objects.isNull(ClientManager.remove(id()))){
+                    completableFuture.complete(true);
+                }
+                completableFuture.completeExceptionally(new BaseException("ClientManager 移除客户端缓存失败" + id()));
+            }
+            completableFuture.completeExceptionally(f.cause());
+        });
+        return completableFuture;
     }
 
     @Override
