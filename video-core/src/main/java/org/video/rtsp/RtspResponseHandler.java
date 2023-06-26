@@ -19,18 +19,22 @@ public class RtspResponseHandler extends DefaultRtspMethodHandler<RtspClient> im
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        log.info("已连接");
+        log.info("已连接 from {} to {}", ctx.channel().localAddress(), ctx.channel().remoteAddress());
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        log.info("连接被关闭");
+        if (ctx.channel().isActive()) {
+            log.info("客户端断开连接 from {} to {}", ctx.channel().localAddress(), ctx.channel().remoteAddress());
+        } else {
+            log.info("服务端断开连接 from {} to {}", ctx.channel().remoteAddress(), ctx.channel().localAddress());
+        }
     }
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, DefaultHttpObject msg) throws Exception {
         RtspClient rtspClient = (RtspClient) ClientManager.client(ctx.channel().id().asLongText());
-        log.info("消息编号{}-------------------", count.incrementAndGet());
+        log.info("消息编号{} from {} to {}", count.incrementAndGet(), ctx.channel().remoteAddress(), ctx.channel().localAddress());
         if (msg instanceof DefaultHttpResponse) {
             DefaultHttpResponse httpResponse = (DefaultHttpResponse) msg;
             int code = httpResponse.status().code();
@@ -45,7 +49,7 @@ public class RtspResponseHandler extends DefaultRtspMethodHandler<RtspClient> im
                     sdpHeaderHandler(rtspClient, headers);
                     return;
                 }
-                if(StrUtil.isNotBlank(headers.get(RtspHeaderNames.TRANSPORT)) && headers.get(RtspHeaderNames.TRANSPORT).contains("ssrc=")){
+                if (StrUtil.isNotBlank(headers.get(RtspHeaderNames.TRANSPORT)) && headers.get(RtspHeaderNames.TRANSPORT).contains("ssrc=")) {
                     setupHandler(rtspClient, headers);
                     return;
                 }

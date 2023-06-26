@@ -28,6 +28,9 @@ public class RtspUrlParser {
                 port = 554;
             }
             uri = new StringBuffer().append(u.getScheme()).append("://").append(ip).append(":").append(port).append(u.getPath()).toString();
+            if(u.getUserInfo() == null){
+                return true;
+            }
             username = u.getUserInfo().split(":")[0].trim();
             password = u.getUserInfo().split(":")[1].trim();
             return true;
