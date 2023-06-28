@@ -4,4 +4,6 @@ import lombok.Data;
 import org.video.entity.request.BaseRequest;
 @Data
 public class RtspRequest extends BaseRequest {
+    private String url;
+
 }

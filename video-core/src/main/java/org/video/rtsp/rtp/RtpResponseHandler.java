@@ -6,7 +6,7 @@ import io.netty.channel.socket.DatagramPacket;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.video.netty.ServerManager;
+import org.video.manager.ServerManager;
 
 @Slf4j
 public class RtpResponseHandler extends SimpleChannelInboundHandler<DatagramPacket>{

@@ -6,6 +6,8 @@ import java.util.concurrent.CompletableFuture;
 
 public interface RtspService<T> {
 
-    CompletableFuture<BaseResponse> request(T t);
+    CompletableFuture<BaseResponse> connect(T t);
+
+    CompletableFuture<BaseResponse> disconnect(T t);
 
 }

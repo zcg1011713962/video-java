@@ -1,8 +1,9 @@
-package org.video.netty;
+package org.video.manager;
 
 import cn.hutool.core.util.StrUtil;
 import io.netty.channel.Channel;
 import org.video.exception.BaseException;
+import org.video.netty.Client;
 
 import java.util.Iterator;
 import java.util.Map;

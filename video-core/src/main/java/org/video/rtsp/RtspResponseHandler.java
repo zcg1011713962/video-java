@@ -7,7 +7,7 @@ import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.rtsp.RtspHeaderNames;
 import io.netty.handler.codec.rtsp.RtspResponseStatuses;
 import lombok.extern.slf4j.Slf4j;
-import org.video.netty.ClientManager;
+import org.video.manager.ClientManager;
 import org.video.netty.ResponseHandler;
 
 import java.nio.charset.Charset;

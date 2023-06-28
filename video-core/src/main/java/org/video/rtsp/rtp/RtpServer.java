@@ -8,8 +8,7 @@ import io.netty.channel.ChannelFutureListener;
 import lombok.extern.slf4j.Slf4j;
 import org.video.eum.Protocol;
 import org.video.exception.BaseException;
-import org.video.manager.CacheManager;
-import org.video.netty.ServerManager;
+import org.video.manager.ServerManager;
 import org.video.netty.abs.AbstractServer;
 
 import java.util.Objects;

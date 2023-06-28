@@ -1,11 +1,13 @@
 package org.video.entity.response;
 
+import cn.hutool.http.HttpStatus;
+
 public class BaseResponse<T> {
     private int code;
     private String message;
     private T data;
 
-    private static BaseResponse success = new BaseResponse("success", 200);
+    private static BaseResponse success = new BaseResponse("success", HttpStatus.HTTP_OK);
     private static BaseResponse fail = new BaseResponse("fail", 1000);
     private static BaseResponse exception = new BaseResponse("exception", 2000);
 
@@ -14,22 +16,31 @@ public class BaseResponse<T> {
 
     private BaseResponse(String msg, int code) {
         this.message = msg;
-        this.code =code;
+        this.code = code;
     }
 
-    public static BaseResponse success(){
+    private BaseResponse(int code, T data) {
+        this.data = data;
+        this.code = code;
+    }
+
+    public static BaseResponse success() {
         return success;
     }
 
-    public static BaseResponse fail(){
+    public static BaseResponse success(Object data) {
+        return new BaseResponse(HttpStatus.HTTP_OK, data);
+    }
+
+    public static BaseResponse fail() {
         return fail;
     }
 
-    public static BaseResponse exception(){
+    public static BaseResponse exception() {
         return exception;
     }
 
-    public static BaseResponse exception(int code, String msg){
+    public static BaseResponse exception(int code, String msg) {
         return new BaseResponse(msg, code);
     }
 

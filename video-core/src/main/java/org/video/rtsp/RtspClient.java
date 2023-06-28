@@ -1,6 +1,7 @@
 package org.video.rtsp;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpStatus;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
@@ -10,7 +11,7 @@ import org.video.entity.response.BaseResponse;
 import org.video.eum.Protocol;
 import org.video.exception.BaseException;
 import org.video.exception.FutureException;
-import org.video.netty.ClientManager;
+import org.video.manager.ClientManager;
 import org.video.netty.abs.AbstractClient;
 import org.video.rtsp.entity.RtspEntity;
 import org.video.rtsp.entity.RtspReqPacket;
@@ -18,6 +19,7 @@ import org.video.rtsp.entity.RtspSDParser;
 import org.video.rtsp.entity.RtspUrlParser;
 
 import java.net.InetSocketAddress;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 @Slf4j
@@ -44,9 +46,11 @@ public class RtspClient<T> extends AbstractClient<CompletableFuture<BaseResponse
             CompletableFuture.completedFuture(new BaseException("解析url错误"));
         }
         return connect().thenApply(success -> {
-            if (success.getCode() == 200) {
+            if (success.getCode() == HttpStatus.HTTP_OK) {
                 write(RtspReqPacket.options(rtspParser.getUri(), RtspReqPacket.commonCseq.getAndIncrement()));
-                return BaseResponse.success();
+                HashMap<String, String> params = new HashMap<>(1);
+                params.put("clientId", id());
+                return BaseResponse.success(params);
             }
             return BaseResponse.fail();
         });
@@ -67,10 +71,10 @@ public class RtspClient<T> extends AbstractClient<CompletableFuture<BaseResponse
 
     @Override
     public Channel channel() {
-        if (channel != null && channel.isOpen()) {
+        if (channel != null) {
             return channel;
         }
-        return null;
+        throw new BaseException("通道为空");
     }
 
 
@@ -121,8 +125,8 @@ public class RtspClient<T> extends AbstractClient<CompletableFuture<BaseResponse
 
     @Override
     public CompletableFuture<BaseResponse> write(ByteBuf byteBuf) {
-        CompletableFuture<BaseResponse> completableFuture = new CompletableFuture<>();
         if (channel != null && channel.isOpen()) {
+            CompletableFuture<BaseResponse> completableFuture = new CompletableFuture<>();
             channel.writeAndFlush(byteBuf).addListener((ChannelFutureListener) f -> {
                 if (f.isSuccess()) {
                     completableFuture.complete(BaseResponse.success());
@@ -130,8 +134,9 @@ public class RtspClient<T> extends AbstractClient<CompletableFuture<BaseResponse
                     completableFuture.completeExceptionally(f.cause());
                 }
             });
+            return completableFuture;
         }
-        return completableFuture;
+        throw new BaseException("通道不可用");
     }
 
     public static class Builder {
@@ -153,9 +158,7 @@ public class RtspClient<T> extends AbstractClient<CompletableFuture<BaseResponse
         }
 
         public CompletableFuture<BaseResponse> build() {
-            RtspClient rtspClient = new RtspClient(url, clientId);
-            CompletableFuture future = rtspClient.init();
-            return future;
+            return new RtspClient(url, clientId).init();
         }
 
     }

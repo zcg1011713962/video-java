@@ -17,9 +17,15 @@ public class RtspController {
     @Autowired
     private RtspService<RtspRequest> rtspService;
 
-    @RequestMapping("/request")
-    public Mono<BaseResponse> request(@RequestBody RtspRequest rtspRequest){
-        return Mono.fromFuture(rtspService.request(rtspRequest));
+    @RequestMapping("/connect")
+    public Mono<BaseResponse> connect(@RequestBody RtspRequest rtspRequest){
+        return Mono.fromFuture(rtspService.connect(rtspRequest));
+    }
+
+
+    @RequestMapping("/disconnect")
+    public Mono<BaseResponse> disconnect(@RequestBody RtspRequest rtspRequest){
+        return Mono.fromFuture(rtspService.disconnect(rtspRequest));
     }
 
 }
