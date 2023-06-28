@@ -11,5 +11,16 @@
 
     <artifactId>video-web</artifactId>
 
-
+    <dependencies>
+        <dependency>
+            <groupId>org.video</groupId>
+            <artifactId>video-common</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.video</groupId>
+            <artifactId>video-api</artifactId>
+            <version>${revision}</version>
+        </dependency>
+    </dependencies>
 </project>

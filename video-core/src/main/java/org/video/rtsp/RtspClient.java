@@ -6,11 +6,11 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import lombok.extern.slf4j.Slf4j;
 import org.common.util.Md5Util;
+import org.video.entity.response.BaseResponse;
 import org.video.eum.Protocol;
 import org.video.exception.BaseException;
 import org.video.exception.FutureException;
 import org.video.netty.ClientManager;
-import org.video.netty.ServerManager;
 import org.video.netty.abs.AbstractClient;
 import org.video.rtsp.entity.RtspEntity;
 import org.video.rtsp.entity.RtspReqPacket;
@@ -21,7 +21,7 @@ import java.net.InetSocketAddress;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 @Slf4j
-public class RtspClient<T> extends AbstractClient<CompletableFuture<Boolean>> {
+public class RtspClient<T> extends AbstractClient<CompletableFuture<BaseResponse>> {
     private String clientId;
     private String url;
     private Channel channel;
@@ -35,7 +35,7 @@ public class RtspClient<T> extends AbstractClient<CompletableFuture<Boolean>> {
     }
 
     @Override
-    public CompletableFuture<Boolean> init() {
+    public CompletableFuture<BaseResponse> init() {
         RtspUrlParser rtspParser = new RtspUrlParser(url);
         if (rtspParser.parse()) {
             rtspEntity = new RtspEntity(rtspParser.getUri(), rtspParser.getUsername(), rtspParser.getPassword());
@@ -44,11 +44,11 @@ public class RtspClient<T> extends AbstractClient<CompletableFuture<Boolean>> {
             CompletableFuture.completedFuture(new BaseException("解析url错误"));
         }
         return connect().thenApply(success -> {
-            if (success) {
+            if (success.getCode() == 200) {
                 write(RtspReqPacket.options(rtspParser.getUri(), RtspReqPacket.commonCseq.getAndIncrement()));
-                return true;
+                return BaseResponse.success();
             }
-            return false;
+            return BaseResponse.fail();
         });
     }
 
@@ -83,8 +83,8 @@ public class RtspClient<T> extends AbstractClient<CompletableFuture<Boolean>> {
     }
 
     @Override
-    public CompletableFuture<Boolean> connect() {
-        CompletableFuture<Boolean> cFuture = new CompletableFuture<>();
+    public CompletableFuture<BaseResponse> connect() {
+        CompletableFuture<BaseResponse> cFuture = new CompletableFuture<>();
         try {
             RtspUrlParser rtspUrlParser = new RtspUrlParser(url);
             if (!rtspUrlParser.parse()) {
@@ -93,7 +93,7 @@ public class RtspClient<T> extends AbstractClient<CompletableFuture<Boolean>> {
             getTcpClient().connect(new InetSocketAddress(rtspUrlParser.getIp(), rtspUrlParser.getPort())).addListener((ChannelFutureListener) future -> {
                 if (future.isSuccess()) {
                     channel = future.channel();
-                    cFuture.complete(true);
+                    cFuture.complete(BaseResponse.success());
                 } else {
                     cFuture.completeExceptionally(future.cause());
                 }
@@ -105,12 +105,12 @@ public class RtspClient<T> extends AbstractClient<CompletableFuture<Boolean>> {
     }
 
     @Override
-    public CompletableFuture<Boolean> close() {
-        CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
+    public CompletableFuture<BaseResponse> close() {
+        CompletableFuture<BaseResponse> completableFuture = new CompletableFuture<>();
         channel.close().addListener((ChannelFutureListener)f ->{
             if(f.isSuccess()){
                 if(Objects.isNull(ClientManager.remove(id()))){
-                    completableFuture.complete(true);
+                    completableFuture.complete(BaseResponse.success());
                 }
                 completableFuture.completeExceptionally(new BaseException("ClientManager 移除客户端缓存失败" + id()));
             }
@@ -120,12 +120,12 @@ public class RtspClient<T> extends AbstractClient<CompletableFuture<Boolean>> {
     }
 
     @Override
-    public CompletableFuture<Boolean> write(ByteBuf byteBuf) {
-        CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
+    public CompletableFuture<BaseResponse> write(ByteBuf byteBuf) {
+        CompletableFuture<BaseResponse> completableFuture = new CompletableFuture<>();
         if (channel != null && channel.isOpen()) {
             channel.writeAndFlush(byteBuf).addListener((ChannelFutureListener) f -> {
                 if (f.isSuccess()) {
-                    completableFuture.complete(true);
+                    completableFuture.complete(BaseResponse.success());
                 } else {
                     completableFuture.completeExceptionally(f.cause());
                 }
@@ -152,7 +152,7 @@ public class RtspClient<T> extends AbstractClient<CompletableFuture<Boolean>> {
             return this;
         }
 
-        public CompletableFuture<Boolean> build() {
+        public CompletableFuture<BaseResponse> build() {
             RtspClient rtspClient = new RtspClient(url, clientId);
             CompletableFuture future = rtspClient.init();
             return future;

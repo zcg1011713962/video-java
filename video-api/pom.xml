@@ -10,6 +10,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>video-api</artifactId>
-
+    <dependencies>
+        <dependency>
+            <groupId>org.video</groupId>
+            <artifactId>video-common</artifactId>
+            <version>${revision}</version>
+        </dependency>
+    </dependencies>
 
 </project>

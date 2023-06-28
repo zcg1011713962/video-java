@@ -1,7 +1,9 @@
 package org.video.exception;
 
-import java.io.Serializable;
+import lombok.Data;
 
+import java.io.Serializable;
+@Data
 public class BaseException extends RuntimeException implements Serializable {
 
     private int code = 10000;
