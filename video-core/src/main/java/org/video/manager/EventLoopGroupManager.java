@@ -3,8 +3,8 @@ package org.video.manager;
 import io.netty.channel.nio.NioEventLoopGroup;
 
 public class EventLoopGroupManager {
-    private static NioEventLoopGroup workGroup;
-    private static NioEventLoopGroup bossGroup;
+    private static volatile NioEventLoopGroup workGroup;
+    private static volatile NioEventLoopGroup bossGroup;
 
     public static NioEventLoopGroup getWorkGroup() {
         if(workGroup == null){
