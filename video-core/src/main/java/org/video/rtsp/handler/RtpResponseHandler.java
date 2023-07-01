@@ -1,4 +1,4 @@
-package org.video.rtsp.rtp;
+package org.video.rtsp.handler;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -7,9 +7,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.video.manager.ServerManager;
+import org.video.netty.abs.AbstractInboundHandler;
+import org.video.rtsp.RtpServer;
 
 @Slf4j
-public class RtpResponseHandler extends SimpleChannelInboundHandler<DatagramPacket>{
+public class RtpResponseHandler extends AbstractInboundHandler<DatagramPacket> {
     @Autowired(required = false)
     private ApplicationEventPublisher publisher;
 

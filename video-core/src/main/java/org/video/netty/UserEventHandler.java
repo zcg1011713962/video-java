@@ -1,7 +1,7 @@
 package org.video.netty;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.SimpleUserEventChannelHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -10,10 +10,10 @@ import lombok.extern.slf4j.Slf4j;
  * 心跳检测
  */
 @Slf4j
-public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
+public class UserEventHandler extends SimpleUserEventChannelHandler {
 
     @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+    protected void eventReceived(ChannelHandlerContext ctx, Object evt) {
         // 超时事件
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent idleEvent = (IdleStateEvent) evt;
@@ -25,6 +25,5 @@ public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
                 log.error("触发超时事件");
             }
         }
-        super.userEventTriggered(ctx, evt);
     }
 }

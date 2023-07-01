@@ -1,4 +1,4 @@
-package org.video.rtsp.rtp;
+package org.video.rtsp;
 
 import cn.hutool.core.lang.UUID;
 import io.netty.bootstrap.Bootstrap;

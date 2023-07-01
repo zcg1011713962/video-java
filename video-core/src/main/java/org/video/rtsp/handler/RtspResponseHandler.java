@@ -1,4 +1,4 @@
-package org.video.rtsp;
+package org.video.rtsp.handler;
 
 import cn.hutool.core.util.StrUtil;
 import io.netty.buffer.ByteBuf;
@@ -9,6 +9,8 @@ import io.netty.handler.codec.rtsp.RtspResponseStatuses;
 import lombok.extern.slf4j.Slf4j;
 import org.video.manager.ClientManager;
 import org.video.netty.ResponseHandler;
+import org.video.rtsp.RtspClient;
+import org.video.rtsp.handler.abs.DefaultRtspMethodHandler;
 
 import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,19 +19,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RtspResponseHandler extends DefaultRtspMethodHandler<RtspClient> implements ResponseHandler {
     private AtomicInteger count = new AtomicInteger();
 
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        log.info("已连接 from {} to {}", ctx.channel().localAddress(), ctx.channel().remoteAddress());
-    }
-
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        if (ctx.channel().isActive()) {
-            log.info("客户端断开连接 from {} to {}", ctx.channel().localAddress(), ctx.channel().remoteAddress());
-        } else {
-            log.info("服务端断开连接 from {} to {}", ctx.channel().remoteAddress(), ctx.channel().localAddress());
-        }
-    }
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, DefaultHttpObject msg) throws Exception {

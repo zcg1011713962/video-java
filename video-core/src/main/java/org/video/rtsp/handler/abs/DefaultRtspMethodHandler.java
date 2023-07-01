@@ -1,4 +1,4 @@
-package org.video.rtsp;
+package org.video.rtsp.handler.abs;
 
 import cn.hutool.core.util.StrUtil;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -6,9 +6,10 @@ import io.netty.handler.codec.rtsp.RtspHeaderNames;
 import io.netty.handler.codec.rtsp.RtspMethods;
 import lombok.extern.slf4j.Slf4j;
 import org.video.exception.BaseException;
+import org.video.rtsp.RtspClient;
 import org.video.rtsp.entity.RtspEntity;
 import org.video.rtsp.entity.RtspReqPacket;
-import org.video.rtsp.rtp.RtpServer;
+import org.video.rtsp.RtpServer;
 import org.video.rtsp.rtp.VideoACK;
 import org.video.rtsp.entity.RTSPDigest;
 import org.video.rtsp.entity.RtspSDParser;
@@ -20,7 +21,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public abstract class DefaultRtspMethodHandler<T> extends RtspMethodHandler<RtspClient>{
+public abstract class DefaultRtspMethodHandler<T> extends RtspMethodHandler<RtspClient> {
 
     @Override
     public void optionsHandler(RtspClient rtspClient, HttpHeaders headers) {

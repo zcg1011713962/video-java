@@ -1,7 +1,7 @@
 package org.video;
 
 import org.junit.jupiter.api.Test;
-import org.video.rtsp.rtp.RtpServer;
+import org.video.rtsp.RtpServer;
 
 import java.util.concurrent.ExecutionException;
 
