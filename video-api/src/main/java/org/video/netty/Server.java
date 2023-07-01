@@ -1,14 +1,23 @@
 package org.video.netty;
 
-import io.netty.channel.Channel;
-import org.video.eum.Protocol;
+import io.netty.bootstrap.Bootstrap;
 
 public interface Server<T> extends Connection<T> {
 
-    String id();
+    /**
+     * udp server
+     * @return
+     */
+    default Bootstrap getUDPServer(){
+        return null;
+    }
 
-    Protocol protocol();
-
-    Channel channel();
+    /**
+     * websocket server
+     * @return
+     */
+    default Bootstrap getWebSocketServer(){
+        return null;
+    }
 
 }

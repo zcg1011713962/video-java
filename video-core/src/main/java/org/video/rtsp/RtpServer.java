@@ -1,11 +1,10 @@
 package org.video.rtsp;
 
-import cn.hutool.core.lang.UUID;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import lombok.extern.slf4j.Slf4j;
+import org.video.entity.response.BaseResponse;
 import org.video.eum.Protocol;
 import org.video.exception.BaseException;
 import org.video.manager.ServerManager;
@@ -14,20 +13,12 @@ import org.video.netty.abs.AbstractServer;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 @Slf4j
-public class RtpServer extends AbstractServer<CompletableFuture<Boolean>> {
-    private int port;
-    private Channel channel;
-
+public class RtpServer extends AbstractServer<CompletableFuture<BaseResponse>> {
 
     private RtpServer(int port){
-        super.channelHandler(protocol());
-        this.port = port;
+        super(port);
     }
 
-    @Override
-    public String id() {
-        return UUID.fastUUID().toString();
-    }
 
     @Override
     public Protocol protocol() {
@@ -35,60 +26,19 @@ public class RtpServer extends AbstractServer<CompletableFuture<Boolean>> {
     }
 
     @Override
-    public Channel channel() {
-        if (channel != null && channel.isOpen()) {
-            return channel;
-        }
-        return null;
-    }
-
-    @Override
-    public CompletableFuture<Boolean> init() {
+    public void manager() {
+        channelHandler(protocol());
         ServerManager.put(id(), this);
-        return bind();
     }
+
 
     @Override
-    public CompletableFuture<Boolean> bind() {
-        CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
-        try {
-            Bootstrap udpServer = getUDPServer();
-            udpServer.bind(port).sync().addListener((ChannelFutureListener) f -> {
-                if (f.isSuccess()) {
-                    channel = f.channel();
-                    log.info("成功监听UDP端口-{}", port);
-                    completableFuture.complete(true);
-                } else {
-                    completableFuture.completeExceptionally(f.cause());
-                }
-            });
-        }catch (Exception e){
-            log.error("{}", e.getMessage());
-            completableFuture.completeExceptionally(e.getCause());
-        }
-        return completableFuture;
+    public CompletableFuture<BaseResponse> init() {
+        manager();
+        channelHandler(protocol());
+        Bootstrap udpServer = getUDPServer();
+        return bind(udpServer);
     }
-
-    @Override
-    public CompletableFuture<Boolean> write(ByteBuf byteBuf) {
-        return null;
-    }
-
-    @Override
-    public CompletableFuture<Boolean> close() {
-        CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
-        channel.close().addListener((ChannelFutureListener)f ->{
-            if(f.isSuccess()){
-                if(Objects.isNull(ServerManager.remove(id()))){
-                    completableFuture.complete(true);
-                }
-                completableFuture.completeExceptionally(new BaseException("ServerManager 移除服务端缓存失败" + id()));
-            }
-            completableFuture.completeExceptionally(f.cause());
-        });
-        return completableFuture;
-    }
-
 
     public static class Builder {
         private int port;
@@ -98,7 +48,7 @@ public class RtpServer extends AbstractServer<CompletableFuture<Boolean>> {
             return this;
         }
 
-        public CompletableFuture<Boolean> build() {
+        public CompletableFuture<BaseResponse> build() {
             RtpServer rtpServer = new RtpServer(port);
             return rtpServer.init();
         }

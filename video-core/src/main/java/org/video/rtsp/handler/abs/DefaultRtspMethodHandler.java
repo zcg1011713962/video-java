@@ -1,6 +1,7 @@
 package org.video.rtsp.handler.abs;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpStatus;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.rtsp.RtspHeaderNames;
 import io.netty.handler.codec.rtsp.RtspMethods;
@@ -62,8 +63,8 @@ public abstract class DefaultRtspMethodHandler<T> extends RtspMethodHandler<Rtsp
             String response = digest.calculateResponse();
             int rtpPort = PortUtil.offerPort(true);
             int rtcpPort = PortUtil.offerPort(false);
-            new RtpServer.Builder().setPort(rtpPort).build().thenAccept(success ->{
-                if(success){
+            new RtpServer.Builder().setPort(rtpPort).build().thenAccept(r ->{
+                if(r.getCode() == HttpStatus.HTTP_OK){
                     rtspClient.write(RtspReqPacket.setup(rtspEntity.getUri(), rtspSDParser.getTransport(), rtpPort, rtcpPort, rtspSDParser.getTrackID(), StrUtil.EMPTY, rtspEntity.getUserName(), rtspEntity.getNonce(), rtspEntity.getRealm(), response, rtspClient.getRtspSDParser().getCseq()));
                 }
             }).exceptionally(f ->{

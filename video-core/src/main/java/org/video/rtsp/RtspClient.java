@@ -1,12 +1,8 @@
 package org.video.rtsp;
 
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpStatus;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import lombok.extern.slf4j.Slf4j;
-import org.common.util.Md5Util;
 import org.video.entity.response.BaseResponse;
 import org.video.eum.Protocol;
 import org.video.exception.BaseException;
@@ -20,20 +16,25 @@ import org.video.rtsp.entity.RtspUrlParser;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class RtspClient<T> extends AbstractClient<CompletableFuture<BaseResponse>> {
-    private String clientId;
-    private String url;
-    private Channel channel;
     private RtspEntity rtspEntity;
     private RtspSDParser rtspSDParser = new RtspSDParser();
 
-    private RtspClient(String url, String clientId) {
-        super.channelHandler(protocol());
-        this.url = url;
-        this.clientId = clientId;
+    private RtspClient(String url) {
+        super(url);
+        channelHandler(protocol());
+    }
+
+    @Override
+    public Protocol protocol() {
+        return Protocol.RTSP;
+    }
+
+    @Override
+    public void manager() {
+        ClientManager.put(id(), this);
     }
 
     @Override
@@ -41,7 +42,7 @@ public class RtspClient<T> extends AbstractClient<CompletableFuture<BaseResponse
         RtspUrlParser rtspParser = new RtspUrlParser(url);
         if (rtspParser.parse()) {
             rtspEntity = new RtspEntity(rtspParser.getUri(), rtspParser.getUsername(), rtspParser.getPassword());
-            ClientManager.put(id(), this);
+            manager();
         } else {
             CompletableFuture.completedFuture(new BaseException("解析url错误"));
         }
@@ -54,27 +55,6 @@ public class RtspClient<T> extends AbstractClient<CompletableFuture<BaseResponse
             }
             return BaseResponse.fail();
         });
-    }
-
-    @Override
-    public String id() {
-        if(StrUtil.isBlank(clientId)){
-            return Md5Util.calculateMD5(url);
-        }
-        return clientId;
-    }
-
-    @Override
-    public Protocol protocol() {
-        return Protocol.RTSP;
-    }
-
-    @Override
-    public Channel channel() {
-        if (channel != null) {
-            return channel;
-        }
-        throw new BaseException("通道为空");
     }
 
 
@@ -108,40 +88,9 @@ public class RtspClient<T> extends AbstractClient<CompletableFuture<BaseResponse
         return cFuture;
     }
 
-    @Override
-    public CompletableFuture<BaseResponse> close() {
-        CompletableFuture<BaseResponse> completableFuture = new CompletableFuture<>();
-        channel.close().addListener((ChannelFutureListener)f ->{
-            if(f.isSuccess()){
-                if(Objects.isNull(ClientManager.remove(id()))){
-                    completableFuture.complete(BaseResponse.success());
-                }
-                completableFuture.completeExceptionally(new BaseException("ClientManager 移除客户端缓存失败" + id()));
-            }
-            completableFuture.completeExceptionally(f.cause());
-        });
-        return completableFuture;
-    }
-
-    @Override
-    public CompletableFuture<BaseResponse> write(ByteBuf byteBuf) {
-        if (channel != null && channel.isOpen()) {
-            CompletableFuture<BaseResponse> completableFuture = new CompletableFuture<>();
-            channel.writeAndFlush(byteBuf).addListener((ChannelFutureListener) f -> {
-                if (f.isSuccess()) {
-                    completableFuture.complete(BaseResponse.success());
-                } else {
-                    completableFuture.completeExceptionally(f.cause());
-                }
-            });
-            return completableFuture;
-        }
-        throw new BaseException("通道不可用");
-    }
 
     public static class Builder {
         private String url;
-        private String clientId;
 
         /**
          * @param url rtsp://admin:link123456@192.168.7.12:554/h264/ch1/main/av_stream
@@ -152,13 +101,8 @@ public class RtspClient<T> extends AbstractClient<CompletableFuture<BaseResponse
             return this;
         }
 
-        public Builder setClientId(String clientId) {
-            this.clientId = clientId;
-            return this;
-        }
-
         public CompletableFuture<BaseResponse> build() {
-            return new RtspClient(url, clientId).init();
+            return new RtspClient(url).init();
         }
 
     }

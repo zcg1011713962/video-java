@@ -1,8 +1,9 @@
 package org.video.netty;
 
-import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
+import org.video.eum.Protocol;
 
 public interface Connection<T> extends ClientHandle<T>, ServerHandle<T> {
 
@@ -25,21 +26,13 @@ public interface Connection<T> extends ClientHandle<T>, ServerHandle<T> {
         return null;
     };
 
-    /**
-     * tcp client
-     * @return
-     */
-    default Bootstrap getTcpClient() {
-        return null;
-    }
+    String id();
 
-    /**
-     * udp server
-     * @return
-     */
-    default Bootstrap getUDPServer(){
-        return null;
-    }
+    Protocol protocol();
+
+    Channel channel();
+
+    void manager();
 
     T write(ByteBuf byteBuf);
 

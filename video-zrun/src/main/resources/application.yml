@@ -7,5 +7,7 @@ logging:
       path: log
 rtsp:
   enable: true
-  proxy: true
-
+  proxy: false
+websocket:
+  enable: true
+  proxy: false
