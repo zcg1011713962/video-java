@@ -13,7 +13,7 @@ public class GlobalException {
 
     @ExceptionHandler(value = Exception.class)
     public BaseResponse handleMyException(Exception ex) {
-        log.error("{}", ex);
+        log.error("全局异常捕获:{}", ex.getMessage());
         if(ex instanceof BaseException){
             BaseException e = (BaseException) ex;
             return new BaseResponse.Builder()
