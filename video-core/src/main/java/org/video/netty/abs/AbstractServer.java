@@ -100,7 +100,7 @@ public abstract class AbstractServer<T> implements Server<CompletableFuture<Base
                 } else {
                     completableFuture.completeExceptionally(f.cause());
                 }
-            });
+            }).get();
         }catch (Exception e){
             log.error("{}", e.getMessage());
             completableFuture.completeExceptionally(e.getCause());
